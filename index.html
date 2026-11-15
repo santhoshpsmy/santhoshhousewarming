@@ -10,7 +10,7 @@
 <style>
 :root{--maroon:#5b0e14;--deep:#2b0508;--gold:#f3c14f;--turm:#f5a300;--cream:#fff3d4;--leaf:#1f7a40;--kumkum:#c4161c;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{-webkit-text-size-adjust:100%;overflow-x:hidden;height:100%;scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden;height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;min-height:100%;background:radial-gradient(ellipse at 50% 0,#7a1620 0,var(--maroon) 45%,var(--deep) 100%);-webkit-tap-highlight-color:transparent;color:var(--cream);font:400 18px/1.7 "Mukta Malar","Noto Sans Tamil",system-ui,sans-serif;overflow-x:hidden}
 body.lock{overflow:hidden}
@@ -218,7 +218,7 @@ function confetti(n){var col=["#e63946","#f3c14f","#2a9d8f","#4cc9f0","#f72585",
 $("openBtn").onclick=function(){
   $("gate").classList.add("open");fall(40);
   setTimeout(function(){$("gate").style.display="none";document.body.classList.remove("lock")},1600);
-  setTimeout(watch,300);
+  setTimeout(watch,300);setTimeout(function(){auto=true;pos=scrollY;lastU=Date.now()-1500},2400);
 };
 
 // reveal on scroll
@@ -254,7 +254,7 @@ function reveal(){
   document.querySelectorAll(".gate2").forEach(function(g){g.classList.add("show")});
   document.querySelectorAll("#s4 .wrap,#s5 .wrap").forEach(function(w){w.classList.add("rv")});
   startCD();watch();
-  setTimeout(function(){$("s4").scrollIntoView({behavior:"smooth"})},1400);
+  setTimeout(function(){pos=scrollY;lastU=Date.now()-1500},1600);
 }
 cv.addEventListener("pointerdown",function(e){$("hand").style.display="none";down=true;cv.setPointerCapture(e.pointerId);scratch(e)});
 cv.addEventListener("pointermove",scratch);
@@ -272,12 +272,26 @@ var cdOn=false;function startCD(){if(cdOn)return;cdOn=true;
 }
 
 new IntersectionObserver(function(es){if(es[0].isIntersecting)startCD()},{threshold:.3}).observe($("s4"));
+// slow auto scroll: runs after opening, waits at the scratch card until it is revealed, pauses when the guest scrolls by hand
+var auto=false,pos=0,lastT=0,lastU=0,rm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+["wheel","touchstart","keydown","mousedown"].forEach(function(ev){addEventListener(ev,function(e){if(e.target!==cv)lastU=Date.now()},{passive:true})});
+function cardY(){var r=cv.parentNode.getBoundingClientRect();return scrollY+r.top+r.height/2-innerHeight/2}
+function loop(t){
+ var dt=Math.min(.05,(t-lastT)/1000||0);lastT=t;
+ if(auto&&!rm){
+  var max=document.documentElement.scrollHeight-innerHeight,lim=revealed?max:Math.min(max,cardY());
+  if(Math.abs(scrollY-pos)>3){pos=scrollY;lastU=Date.now()}
+  if(Date.now()-lastU>2500&&!down&&pos<lim-1){pos=Math.min(lim,pos+40*dt);scrollTo(0,pos)}
+ }
+ requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
 // RSVP
-$("no").onclick=function(){$("ask").style.display="none";$("miss").classList.add("show");fall(24);try{localStorage.setItem("hw-rsvp","no")}catch(e){}};
-$("yes").onclick=function(){
+$("no").onclick=function(){auto=false;$("ask").style.display="none";$("miss").classList.add("show");fall(24);try{localStorage.setItem("hw-rsvp","no")}catch(e){}};
+$("yes").onclick=function(){auto=false;
   $("ask").style.display="none";$("thanks").classList.add("show");fall(80);
   try{localStorage.setItem("hw-rsvp","yes")}catch(e){}
 };
 </script>
 </body>
 </html>
+
