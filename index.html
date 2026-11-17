@@ -74,6 +74,7 @@ section{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;al
 .btns{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center}
 .btn.alt{background:transparent;color:var(--gold);box-shadow:0 0 0 2px var(--gold);animation:none}
 .ft{text-align:center;padding:18px 14px calc(22px + env(safe-area-inset-bottom,0px));font-size:15px;opacity:.9;border-top:1px solid rgba(243,193,79,.3)}.ft a{color:var(--gold);text-decoration:none;font-weight:600}
+.cd .msg{grid-column:1/-1;font:400 clamp(22px,6vw,32px)/1.4 "Tiro Tamil",Georgia,serif;color:var(--gold);padding:20px 12px;background:linear-gradient(var(--kumkum),#8d0f14);border:2px solid var(--gold);border-radius:12px}
 .ok{display:none}.ok.show{display:block;animation:pop 1s}
 @keyframes pop{from{transform:scale(.3);opacity:0}}
 .fall{position:fixed;top:-40px;z-index:40;pointer-events:none;animation:fall linear forwards}
@@ -185,6 +186,7 @@ var C={
   mother:"P. Malarkodi",
   family:"& Family",
   eventDate:"2026-11-20T06:00:00+05:30",
+  endDate:"2026-11-20T18:00:00+05:30",
   venue:"Plot No 12 – Sakthi Arcade",
   address:"Sowdambiga Nagar, Seelanayaganpatty",
   mapQuery:"Seelanayakanpatty, Salem, Tamil Nadu",
@@ -250,7 +252,7 @@ function check(){
   if(c/n>.08)reveal();
 }
 function reveal(){
-  if(revealed)return;revealed=true;cv.classList.add("done");$("hint").style.display="none";cv.parentNode.classList.add("win");confetti(120);fall(24);
+  if(revealed)return;revealed=true;cv.classList.add("done");$("hint").style.display="none";cv.parentNode.classList.add("win");confetti(120);fall(24);try{navigator.vibrate&&navigator.vibrate([80,40,160,40,260])}catch(e){}
   document.querySelectorAll(".gate2").forEach(function(g){g.classList.add("show")});
   document.querySelectorAll("#s4 .wrap,#s5 .wrap").forEach(function(w){w.classList.add("rv")});
   startCD();watch();
@@ -266,6 +268,10 @@ var cdOn=false;function startCD(){if(cdOn)return;cdOn=true;
   var tgt=new Date(C.eventDate).getTime(),b=$("cd").querySelectorAll("b");
   function tick(){
     var d=Math.max(0,tgt-Date.now()),v=[Math.floor(d/864e5),Math.floor(d/36e5)%24,Math.floor(d/6e4)%60,Math.floor(d/1e3)%60];
+    var n=Date.now(),end=new Date(C.endDate).getTime(),k=n>=end?2:n>=tgt?1:0;
+    if(k){var m=k==2?"Thank you for celebrating with us 🙏":"Today is the day! 🪔 Welcome to our new home";
+      if($("cd").dataset.s!==m){$("cd").dataset.s=m;document.querySelector("#s4 h2").textContent=k==2?"With Gratitude":"Celebration Day";$("cd").innerHTML='<div class="msg">'+m+'</div>'}
+      return}
     v.forEach(function(x,i){b[i].textContent=String(x).padStart(2,"0")});
   }
   tick();setInterval(tick,1000);
@@ -294,4 +300,3 @@ $("yes").onclick=function(){auto=false;
 </script>
 </body>
 </html>
-
